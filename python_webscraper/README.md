@@ -1,0 +1,2 @@
+# One of my first webscrapers
+Was doing some security work long ago and found a problem that allowed unauthenticated users access to an admin page with the ability to generate API keys. I thought I would try to automate this step to ease the rest of the pentest. This was a little script I came up with to go fetch a page, collect required cookie details, then request the API key and return the provided key to me in a few ways to work with further. 

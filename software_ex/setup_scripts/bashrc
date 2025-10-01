@@ -1,0 +1,120 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# Wafffle contrib
+# Colors!!!
+COLOR_RESET='\[\033[0m\]'
+COLOR_BLACK='\[\033[30m\]'
+COLOR_RED='\[\033[31m\]'
+COLOR_GREEN='\[\033[32m\]'
+COLOR_YELLOW='\[\033[33;1m\]'
+COLOR_BLUE='\[\033[34m\]'
+COLOR_MAGENTA='\[\033[35m\]'
+COLOR_CYAN='\[\033[36m\]'
+COLOR_WHITE='\[\033[37m\]'
+COLOR_BRIGHT_BLACK='\[\033[90m\]'
+COLOR_BRIGHT_RED='\[\033[91;1m\]'
+COLOR_BRIGHT_GREEN='\[\033[92m\]'
+COLOR_BRIGHT_YELLOW='\[\033[93m\]'
+COLOR_BRIGHT_BLUE='\[\033[94m\]'
+COLOR_BRIGHT_MAGENTA='\[\033[95m\]'
+COLOR_BRIGHT_CYAN='\[\033[96m\]'
+COLOR_BRIGHT_WHITE='\[\033[97m\]'
+
+rm_nl() {
+    tr -d '\n'
+}
+
+show_git_branch() {
+    git branch &>/dev/null || return 1
+    printf ' '
+    git branch | grep -oP '(?<=\* ).+' | rm_nl
+    #git branch --show-current | rm_nl
+}
+
+show_py_venv() {
+    test -f "$VIRTUAL_ENV/pyvenv.cfg" || return 1
+    printf ' '
+    grep -oP "(?<=prompt = ').+?(?=')" "$VIRTUAL_ENV/pyvenv.cfg" 2> /dev/null | rm_nl
+}
+
+show_error_status() {
+    E="$?"
+    test $E -ne 0 || return 1
+    printf "%d" $E
+}
+
+get_def() {
+    type "$1" | sed -n '/{/,$p'
+}
+
+generate_prompt() {
+    printf '['
+    printf "$COLOR_BRIGHT_RED"
+    printf '$(show_error_status && printf " ")'
+    printf "$COLOR_RESET"
+    if [[ $EUID == 0 ]]; then
+        printf "$COLOR_RED"
+    else
+    	printf "$COLOR_CYAN"
+    fi
+    printf '\\u'
+    printf "$COLOR_RESET"
+    printf '@'
+    printf "$COLOR_GREEN"
+    printf '\\h'
+    printf "$COLOR_YELLOW"
+    printf ' \\w'
+    printf "$COLOR_BRIGHT_YELLOW"
+    printf '$(show_py_venv)'
+    printf "$COLOR_BRIGHT_BLUE"
+    printf '$(show_git_branch)' #&& printf ' '
+    printf "$COLOR_RESET"
+    printf ']$(test $COLUMNS -lt 50 && printf "\\n\\n")\\$ '
+}
+
+
+# Load aliases
+if [ -f /home/ubuntu/.bash_aliases ]; then
+    . /home/ubuntu/.bash_aliases
+fi
+
+# Better Bash History
+HISTFILESIZE=1000000  	# Increase max filesize history
+HISTSIZE=10000		# Increase max memory history
+HISTCONTROL=ignoreboth	# Ignore commands that start with space AND duplicate
+HISTIGNORE='ls:ll:ls -a:ls -l:ls -al:bg:fg:history:clear:pwd'	# Handful of things that aren't very helpful in history
+HISTTIMEFORMAT='%F %T '	# Add history timestamps
+shopt -s histappend	# Force appending to history file
+shopt -s cmdhist	# Multiline commands are forced to one line
+
+# Better prompt
+#PS1="\[\033[35m\]\t\[\033[m\]-\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\033[m\]\$ "
+PS1="$(generate_prompt)"
+
+# Fuzzy Finder for completion help
+eval "$(fzf --bash)"
+
+# Bashmarks
+if [ -f ~/.local/bin/bashmarks.sh ]; then
+    . ~/.local/bin/bashmarks.sh
+fi
+
+# Pyenv PATH stuff
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin/:$PATH"
+eval "$(pyenv init - bash)"
+
+# Generic PATH with additional applications
+export PATH="$PATH:$HOME/.local/bin/"
+export PATH="$PATH:$HOME/.cargo/bin/"
+
+# PWNDBG
+export PWNDBG_NO_AUTOUPDATE=1
+
+# Remove duplicate virtual env prompt due to new and improved prompt
+export VIRTUAL_ENV_DISABLE_PROMPT=1

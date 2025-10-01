@@ -1,0 +1,19 @@
+alias ls='ls --color=auto'
+alias ll='ls -laFtr'
+alias la='ls -laF'
+alias dir='dir --color=auto'
+alias vdir='dir --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# WAYLAND
+#alias copy='wl-copy'
+#alias copylast='fc -ln -1 | cut -c 3- | wl-copy'
+#alias paste='wl-paste -n'
+
+# X11
+alias copy='xclip -selection clipboard'
+alias copylast='fc -ln -1 | cut -c 3- | xclip -selection clipboard'
+alias paste='xclip -selection clipboard -o'
+
